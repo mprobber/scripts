@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 const { execSync } = require('child_process');
-const { writeFileSync } = require('fs');
+const { writeFileSync, existsSync, readFileSync } = require('fs');
 const { resolve } = require('path');
 const BranchName = require('branch-name');
 const tmp = require('tmp');
@@ -10,25 +10,39 @@ if (!process.argv[2]) {
   console.error('You must provide a path to publish');
 }
 
-const GitIgnore = `
+const input = process.argv[2];
+const output = process.argv[3] || input;
+const branch = process.argv[4] || 'gh-pages';
+
+const ignorePath = resolve(output, '.gitignore');
+const GitIgnore = existsSync(ignorePath)
+  ? readFileSync(ignorePath)
+  : `
 node_modules
 `;
+
+const cnamePath = resolve(output, 'CNAME');
+const CNAME = existsSync(cnamePath) && readFileSync(cnamePath);
 
 async function runPublish() {
   const branchName = await BranchName.get();
   try {
-    process.chdir(process.argv[2]);
+    process.chdir(input);
     const { name: path } = tmp.dirSync();
-    execSync(`mv ${resolve(process.cwd(), 'dist')}/* ${path}`);
+    execSync(`mv ${process.cwd()}/dist/* ${path}`);
 
-    execSync('git checkout gh-pages');
+    process.chdir(output);
+    execSync(`git checkout ${branch}`);
     execSync('git rm "*" -rf');
-    writeFileSync(resolve(process.cwd(), '.gitignore'), GitIgnore);
-    execSync(`mv ${path}/* ${resolve(process.cwd())}`);
+    writeFileSync(ignorePath, GitIgnore);
+    if (CNAME) {
+      writeFileSync(cnamePath, CNAME);
+    }
+    execSync(`mv ${path}/* ${output}`);
     execSync('git add .');
     execSync('git commit -m "Automated publish"');
     try {
-      execSync('git push origin gh-pages');
+      execSync(`git push origin ${branch}`);
     } catch (e) {
       console.error(e);
     }
