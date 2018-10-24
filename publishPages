@@ -1,11 +1,16 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 const { execSync } = require('child_process');
 const { resolve } = require('path');
 const BranchName = require('branch-name');
 const tmp = require('tmp');
 
+if (!process.argv[2]) {
+  console.error('You must provide a path to publish');
+}
+
 async function runPublish() {
-  execSync('yarn run build:static');
+  process.chdir(process.argv[2]);
   const branchName = await BranchName.get();
   const { name: path } = tmp.dirSync();
   execSync(`mv ${resolve(process.argv[2], 'dist')} ${path}`);
