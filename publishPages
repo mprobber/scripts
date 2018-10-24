@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+const { execSync } = require('child_process');
+const { resolve } = require('path');
+const BranchName = require('branch-name');
+const tmp = require('tmp');
+
+async function runPublish() {
+  execSync('yarn run build:static');
+  const branchName = await BranchName.get();
+  const { name: path } = tmp.dirSync();
+  execSync(`mv ${resolve(process.argv[2], 'dist')} ${path}`);
+
+  execSync('git checkout gh-pages');
+  execSync('git rm * -r');
+  execSync(`mv ${path} ${resolve(process.cwd())}`);
+  execSync('git add .');
+  execSync('git commit -m "Automated publish"');
+  try {
+    execSync('git push origin gh-pages');
+  } catch (e) {
+    // eslint-disable-next-line
+    console.error(e);
+  }
+  execSync(`git checkout ${branchName}`);
+}
+
+// eslint-disable-next-line
+runPublish().catch(console.error);

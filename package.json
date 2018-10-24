@@ -1,0 +1,21 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "publish-pages": "./publishPages"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mprobber/scripts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mprobber/scripts/issues"
+  },
+  "homepage": "https://github.com/mprobber/scripts#readme",
+  "dependencies": {
+    "tmp": "^0.0.33"
+  }
+}
